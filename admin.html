@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | FrioRio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:        #05070a;
+      --navy-mid:    #0c1018;
+      --navy-light:  #171f2e;
+      --red:         #e11d2e;
+      --red-light:   #f4394a;
+      --blue:        var(--red);
+      --blue-light:  var(--red-light);
+      --border:      rgba(255,255,255,0.08);
+      --border-blue: rgba(225, 29, 46,0.35);
+      --text-muted:  #94a3b8;
+      --radius:      10px;
+      --danger:      #f87171;
+      --danger-bg:   rgba(248,113,113,0.1);
+      --danger-bdr:  rgba(248,113,113,0.3);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: #fff; min-height: 100vh; line-height: 1.6; }
+
+    header { background: var(--navy-mid); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .header-brand { display: flex; flex-direction: column; }
+    .header-brand span:first-child { font-size: 14px; font-weight: 700; color: #fff; }
+    .header-brand span:last-child  { font-size: 11px; color: var(--text-muted); }
+    .header-back { font-size: 12px; font-weight: 500; color: var(--blue-light); text-decoration: none; background: rgba(225, 29, 46,0.12); border: 1px solid var(--border-blue); padding: 5px 14px; border-radius: 99px; transition: background .2s; }
+    .header-back:hover { background: rgba(225, 29, 46,0.25); }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 64px); }
+    .login-box { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 1rem; }
+    .login-box h2 { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: .25rem; }
+    .login-box p { font-size: 13px; color: var(--text-muted); }
+
+    input[type="text"], input[type="password"], input[type="url"], input[type="file"], select {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius);
+      color: #fff; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 14px; outline: none; transition: border-color .2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus, input[type="url"]:focus, select:focus { border-color: var(--blue); }
+    input[type="file"] { cursor: pointer; padding: 8px 12px; }
+    input::placeholder { color: var(--text-muted); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: var(--radius); border: none; cursor: pointer; transition: opacity .2s, transform .1s; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { opacity: .85; }
+    .btn-danger { background: var(--danger-bg); border: 1px solid var(--danger-bdr); color: var(--danger); padding: 6px 12px; font-size: 12px; }
+    .btn-danger:hover { background: rgba(248,113,113,0.2); }
+    .btn-edit { background: rgba(244, 57, 74,0.1); border: 1px solid rgba(244, 57, 74,0.3); color: var(--blue-light); padding: 6px 12px; font-size: 12px; }
+    .btn-edit:hover { background: rgba(244, 57, 74,0.2); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif; border-radius: var(--radius); cursor: pointer; }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+    .card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; margin-bottom: 1.5rem; }
+    .card-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 1.25rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .card-title-icon { width: 30px; height: 30px; background: rgba(225, 29, 46,0.15); border: 1px solid var(--border-blue); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+    .card-title-icon svg { width: 15px; height: 15px; color: var(--blue-light); }
+
+    /* card link — cor diferente */
+    .card-title-icon.green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); }
+    .card-title-icon.green svg { color: #4ade80; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-grid .span2 { grid-column: span 2; }
+    .form-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
+
+    .list-search-wrap { margin-bottom: 14px; position: relative; }
+    .list-search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-muted); pointer-events: none; }
+    .list-search-wrap input { padding-left: 36px; }
+    .list-count { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+
+    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    .file-item { background: var(--navy); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; display: flex; align-items: center; gap: 14px; transition: border-color .2s; }
+    .file-item:hover { border-color: rgba(255,255,255,0.15); }
+    .file-item-icon { width: 38px; height: 38px; background: rgba(225, 29, 46,0.12); border: 1px solid var(--border-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+    .file-item-icon.link-icon { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); }
+    .file-item-info { flex: 1; min-width: 0; }
+    .file-item-name { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* badge tipo */
+    .type-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 99px; flex-shrink: 0; }
+    .type-badge.file { background: rgba(225, 29, 46,0.15); border: 1px solid rgba(225, 29, 46,0.3); color: var(--blue-light); }
+    .type-badge.link { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #4ade80; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .modal-box { background: var(--navy-mid); border: 1px solid var(--border-blue); border-radius: 14px; padding: 1.5rem; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; }
+    .modal-box h3 { font-size: 15px; font-weight: 600; color: #fff; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #171f2e; border: 1px solid var(--border-blue); color: #fff; font-size: 13px; font-weight: 500; padding: 12px 18px; border-radius: 10px; opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .3s; pointer-events: none; z-index: 999; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: var(--danger-bg); border-color: var(--danger-bdr); color: var(--danger); }
+
+    .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 13px; }
+    .loading { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 13px; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .span2 { grid-column: span 1; }
+      .wrap { padding: 1.5rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <span>Kross | FrioRio</span>
+      <span>Painel Administrativo</span>
+    </div>
+    <a href="index.html" class="header-back">← Voltar ao Portal</a>
+  </div>
+</header>
+
+<div id="login">
+  <div class="login-box">
+    <div>
+      <h2>Acesso Restrito</h2>
+      <p>Digite a senha para acessar o painel.</p>
+    </div>
+    <input type="password" id="senha" placeholder="Senha de administrador" onkeydown="if(event.key==='Enter') login()">
+    <button class="btn btn-primary" onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<div id="painel" style="display:none;">
+  <div class="wrap">
+
+    <!-- Upload de arquivo -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        Adicionar Arquivo
+      </div>
+      <div class="form-grid">
+        <input type="text" id="nome" placeholder="Nome do arquivo (ex: Catálogo Linha Frio 2025)">
+        <input type="text" id="categoria" placeholder="Categoria (ex: catálogo, ficha, imagem...)">
+        <input type="text" id="descricao" placeholder="Descrição breve" class="span2">
+        <input type="file" id="arquivo" class="span2">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="adicionarCatalogo()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Salvar arquivo
+        </button>
+      </div>
+    </div>
+
+    <!-- Adicionar Link -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        Adicionar Link
+      </div>
+      <div class="form-grid">
+        <input type="text" id="link-nome" placeholder="Nome do link (ex: Pasta OneDrive — Tabela)">
+        <input type="text" id="link-categoria" placeholder="Categoria (ex: onedrive, pasta, drive...)">
+        <input type="url" id="link-url" placeholder="https://..." class="span2">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" style="background:#16a34a;" onclick="adicionarLink()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Salvar link
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de tudo -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        Arquivos e Links Cadastrados
+      </div>
+      <div class="list-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="listSearch" placeholder="Buscar por nome ou categoria..." oninput="filtrarLista(this.value)">
+      </div>
+      <div class="list-count" id="listCount"></div>
+      <div id="lista"><div class="loading">Carregando…</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Renomear -->
+<div class="modal-overlay" id="modalRenomear" style="display:none;">
+  <div class="modal-box">
+    <h3>Renomear</h3>
+    <input type="text" id="novoNome" placeholder="Novo nome...">
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarRenomear()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://lrcrfgcevoonitmeedez.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyY3JmZ2Nldm9vbml0bWVlZGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MDEyNDQsImV4cCI6MjA5OTI3NzI0NH0.U9hXLR4Z7j-mX2mSJn2hAjypUcIghXkSyz7sARskvyU";
+const SENHA_ADMIN = "Tay@2026Mkt";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let todosItens = [];
+let editandoId = null;
+
+function toast(msg, tipo) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "show" + (tipo === "erro" ? " error" : "");
+  setTimeout(() => { el.className = ""; }, 3000);
+}
+
+function login() {
+  if (document.getElementById("senha").value !== SENHA_ADMIN) { toast("Senha incorreta!", "erro"); return; }
+  document.getElementById("login").style.display = "none";
+  document.getElementById("painel").style.display = "block";
+  carregarTudo();
+}
+
+/* ── ARQUIVO ── */
+async function adicionarCatalogo() {
+  const nome      = document.getElementById("nome").value.trim();
+  const descricao = document.getElementById("descricao").value.trim();
+  const categoria = document.getElementById("categoria").value.trim();
+  const arquivo   = document.getElementById("arquivo").files[0];
+  if (!nome || !arquivo) { toast("Preencha o nome e selecione um arquivo.", "erro"); return; }
+
+  const { error: uploadError } = await db.storage.from("catalogos").upload(arquivo.name, arquivo, { upsert: true });
+  if (uploadError) { toast("Erro no upload: " + uploadError.message, "erro"); return; }
+
+  const arquivo_url = `${SUPABASE_URL}/storage/v1/object/public/catalogos/${arquivo.name}`;
+  const { error } = await db.from("catalogos").insert([{ nome, descricao, categoria, arquivo_url, arquivo_nome: arquivo.name }]);
+  if (error) { toast("Erro ao salvar: " + error.message, "erro"); return; }
+
+  toast("Arquivo adicionado!");
+  ["nome","descricao","categoria"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("arquivo").value = "";
+  carregarTudo();
+}
+
+/* ── LINK ── */
+async function adicionarLink() {
+  const nome      = document.getElementById("link-nome").value.trim();
+  const url       = document.getElementById("link-url").value.trim();
+  const categoria = document.getElementById("link-categoria").value.trim();
+  const descricao = document.getElementById("link-descricao").value.trim();
+  if (!nome || !url) { toast("Preencha o nome e a URL.", "erro"); return; }
+  if (!url.startsWith("http")) { toast("A URL deve começar com http:// ou https://", "erro"); return; }
+
+  const { error } = await db.from("catalogos").insert([{
+    nome, descricao, categoria,
+    arquivo_url: url,
+    arquivo_nome: "__link__"   // marcador interno para identificar links
+  }]);
+  if (error) { toast("Erro ao salvar: " + error.message, "erro"); return; }
+
+  toast("Link adicionado!");
+  ["link-nome","link-url","link-categoria","link-descricao"].forEach(id => document.getElementById(id).value = "");
+  carregarTudo();
+}
+
+/* ── CARREGAR ── */
+async function carregarTudo() {
+  document.getElementById("lista").innerHTML = '<div class="loading">Carregando…</div>';
+  const { data, error } = await db.from("catalogos").select("*").order("id", { ascending: false });
+  if (error) { document.getElementById("lista").innerHTML = `<div class="empty">Erro ao carregar.</div>`; return; }
+  todosItens = data || [];
+  renderizarLista(todosItens);
+}
+
+function renderizarLista(data) {
+  const lista   = document.getElementById("lista");
+  const countEl = document.getElementById("listCount");
+  countEl.textContent = data.length + " item" + (data.length !== 1 ? "s" : "");
+
+  if (!data.length) { lista.innerHTML = `<div class="empty">Nenhum item encontrado.</div>`; return; }
+
+  const icons = { pdf:"📄", jpg:"🖼️", jpeg:"🖼️", png:"🖼️", xls:"📊", xlsx:"📊", zip:"📦", ppt:"📑", pptx:"📑" };
+
+  lista.innerHTML = "";
+  const ul = document.createElement("div");
+  ul.className = "file-list";
+
+  data.forEach(item => {
+    const isLink = item.arquivo_nome === "__link__";
+    const ext    = isLink ? "" : item.arquivo_nome.split(".").pop().toLowerCase();
+    const icon   = isLink ? "🔗" : (icons[ext] || "📁");
+    const div    = document.createElement("div");
+    div.className = "file-item";
+
+    const metaText = isLink
+      ? item.arquivo_url
+      : (item.arquivo_nome + (item.categoria ? " · " + item.categoria : ""));
+
+    div.innerHTML = `
+      <div class="file-item-icon${isLink ? ' link-icon' : ''}">${icon}</div>
+      <div class="file-item-info">
+        <div class="file-item-name">${item.nome}</div>
+        <div class="file-item-meta">${metaText}</div>
+      </div>
+      <span class="type-badge ${isLink ? 'link' : 'file'}">${isLink ? 'link' : 'arquivo'}</span>
+      <div class="file-item-actions">
+        <button class="btn btn-edit" onclick="abrirRenomear(${item.id}, '${item.nome.replace(/'/g,"\\'")}')">Renomear</button>
+        <a href="${item.arquivo_url}" target="_blank" class="btn btn-danger" style="text-decoration:none;">Ver</a>
+        <button class="btn btn-danger" onclick="removerItem(${item.id})">Remover</button>
+      </div>
+    `;
+    ul.appendChild(div);
+  });
+  lista.appendChild(ul);
+}
+
+function filtrarLista(query) {
+  const q = query.toLowerCase();
+  const filtrados = todosItens.filter(item =>
+    item.nome.toLowerCase().includes(q) ||
+    item.arquivo_nome.toLowerCase().includes(q) ||
+    (item.categoria || "").toLowerCase().includes(q)
+  );
+  renderizarLista(filtrados);
+}
+
+function abrirRenomear(id, nomeAtual) {
+  editandoId = id;
+  document.getElementById("novoNome").value = nomeAtual;
+  document.getElementById("modalRenomear").style.display = "flex";
+  setTimeout(() => document.getElementById("novoNome").focus(), 50);
+}
+function fecharModal() { document.getElementById("modalRenomear").style.display = "none"; editandoId = null; }
+
+async function confirmarRenomear() {
+  const novoNome = document.getElementById("novoNome").value.trim();
+  if (!novoNome) { toast("Digite um nome.", "erro"); return; }
+  const { error } = await db.from("catalogos").update({ nome: novoNome }).eq("id", editandoId);
+  if (error) { toast("Erro ao renomear: " + error.message, "erro"); return; }
+  toast("Renomeado!");
+  fecharModal();
+  carregarTudo();
+}
+
+async function removerItem(id) {
+  if (!confirm("Remover este item?")) return;
+  const { error } = await db.from("catalogos").delete().eq("id", id);
+  if (error) { toast("Erro ao remover: " + error.message, "erro"); return; }
+  toast("Removido.");
+  carregarTudo();
+}
+
+document.getElementById("modalRenomear").addEventListener("click", function(e) {
+  if (e.target === this) fecharModal();
+});
+</script>
+</body>
+</html>

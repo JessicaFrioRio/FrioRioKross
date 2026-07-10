@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kross | FrioRio - Distribuidor Oficial Electrolux</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header style="background:#0c1018; border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; z-index:100;">
+  <div class="header-inner" style="max-width:1200px; margin:0 auto; padding:0 1.5rem; height:64px; display:flex; align-items:center; justify-content:space-between;">
+    <a class="logo" href="#" style="display:flex; align-items:center; text-decoration:none; min-width:0;">
+      <div class="logo-wrapper" style="display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:16px;">
+        <img src="logo.png" alt="Logo Electrolux" style="height:26px; width:auto;">
+        <span style="width:1px; height:20px; background-color:rgba(255,255,255,0.2);"></span>
+        <img src="logo2.png" alt="Logo FrioRio" style="height:26px; width:auto;">
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <div style="font-size:14px; font-weight:700; color:#fff;">Kross | FrioRio - Distribuidor Oficial Electrolux</div>
+        <div style="font-size:11px; color:#94a3b8;">Portal do Representante</div>
+      </div>
+    </a>
+    <a href="admin.html" class="header-badge"
+       style="background:rgba(225, 29, 46,0.15); border:1px solid rgba(225, 29, 46,0.3); color:#f4394a; font-size:11px; font-weight:500; padding:4px 12px; border-radius:99px; flex-shrink:0; white-space:nowrap;">
+      Acesso Restrito
+    </a>
+  </div>
+</header>
+
+<!-- Banner capa — topo -->
+<div style="max-width:100%; overflow:hidden;">
+  <img src="capa.png" alt="Banner FrioRio" style="width:100%; display:block;">
+</div>
+
+<section class="hero">
+  <p class="hero-eyebrow">Hub de Materiais Comerciais</p>
+  <h1>Aqui estão todos os materiais <br><span>que você precisa</span></h1>
+  <p class="hero-sub">Encontre catálogos, imagens e muito mais.
+  Busque, acesse e faça o download de forma rápida e prática.</p>
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Digite o nome do produto ou tipo de material..." oninput="onSearchInput(this.value)">
+  </div>
+</section>
+
+<!-- ── CARDS DE ORIENTAÇÃO ── -->
+<section style="background:#0d1d35; border-bottom:1px solid rgba(255,255,255,0.06); padding:2rem 1.5rem;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <p style="text-align:center; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; margin-bottom:1.2rem;">O que você está procurando?</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
+
+
+
+      <div class="guide-card guide-card-clickable" onclick="selecionarCategoria('imagens', this)">
+        <div class="guide-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </div>
+        <div class="guide-card-label">Imagens</div>
+        <div class="guide-card-hint">Fotos dos produtos para uso comercial</div>
+        <div class="guide-card-tag">clique para filtrar</div>
+      </div>
+
+      <div class="guide-card guide-card-clickable" onclick="selecionarCategoria('catálogo', this)">
+        <div class="guide-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div class="guide-card-label">Catálogos</div>
+        <div class="guide-card-hint">Portfólio completo da linha</div>
+        <div class="guide-card-tag">clique para filtrar</div>
+      </div>
+
+      <div class="guide-card guide-card-clickable" onclick="selecionarCategoria('orientações', this)">
+        <div class="guide-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div class="guide-card-label">Orientações</div>
+        <div class="guide-card-hint">Manuais e instruções comerciais</div>
+        <div class="guide-card-tag">clique para filtrar</div>
+      </div>
+
+     
+
+    </div>
+  </div>
+</section>
+
+<!-- Área de resultados — oculta por padrão -->
+<main id="resultados" style="display:none;">
+  <div style="max-width:1200px; margin:0 auto; padding:1rem 1.5rem 0; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+    <p id="resultados-label" style="font-size:13px; color:#94a3b8;"></p>
+    <button onclick="limparFiltro()" style="font-size:12px; font-weight:500; color:#f4394a; background:rgba(225, 29, 46,0.1); border:1px solid rgba(225, 29, 46,0.3); border-radius:99px; padding:4px 14px; cursor:pointer;">✕ Limpar filtro</button>
+  </div>
+
+  <div class="section active" id="tab-todos"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <p>Nenhum arquivo encontrado para "<strong id="emptyQuery"></strong>"</p>
+  </div>
+</main>
+
+<footer>
+  Uso interno exclusivo para representantes autorizados.
+</footer>
+
+<style>
+  .hero h1 span { color: #f4394a; }
+
+  .guide-card {
+    background: #0c1018;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  /* Cards de categoria — clicáveis */
+  .guide-card-clickable {
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+  }
+  .guide-card-clickable:hover {
+    border-color: rgba(225, 29, 46,.5);
+    background: #171f2e;
+    transform: translateY(-2px);
+  }
+  .guide-card-clickable.ativo {
+    border-color: rgba(225, 29, 46,.8);
+    background: #171f2e;
+    box-shadow: 0 0 0 2px rgba(225, 29, 46,0.25);
+  }
+
+  .guide-card-onedrive {
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+  }
+  .guide-card-onedrive:hover {
+    border-color: rgba(0,120,212,.5);
+    background: #171f2e;
+    transform: translateY(-2px);
+  }
+
+  .guide-card-icon {
+    width: 46px; height: 46px;
+    background: rgba(225, 29, 46,.15);
+    border: 1px solid rgba(225, 29, 46,.3);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #f4394a; flex-shrink: 0;
+  }
+  .guide-card-label  { font-size: 12px; font-weight: 600; color: #fff; }
+  .guide-card-hint   { font-size: 10px; color: #94a3b8; line-height: 1.4; }
+  .guide-card-tag    { font-size: 9px; font-weight: 700; letter-spacing:.04em; background:rgba(225, 29, 46,.15); border:1px solid rgba(225, 29, 46,.3); color:#f4394a; padding:2px 8px; border-radius:99px; white-space:nowrap; }
+</style>
+
+<script>
+const SUPABASE_URL = "https://lrcrfgcevoonitmeedez.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyY3JmZ2Nldm9vbml0bWVlZGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MDEyNDQsImV4cCI6MjA5OTI3NzI0NH0.U9hXLR4Z7j-mX2mSJn2hAjypUcIghXkSyz7sARskvyU";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let todosItens = [];
+let cardAtivoEl = null;
+
+async function carregarCatalogos() {
+  const { data, error } = await db.from("catalogos").select("*");
+  if (error) { console.error(error); return; }
+  todosItens = data || [];
+  // Não mostra nada — aguarda clique ou busca
+}
+
+window.onload = carregarCatalogos;
+
+/* ── Clique no card de categoria ── */
+function selecionarCategoria(termo, el) {
+  // Toggle: clicar no mesmo card já ativo limpa o filtro
+  if (cardAtivoEl === el) { limparFiltro(); return; }
+
+  // Marca card ativo
+  if (cardAtivoEl) cardAtivoEl.classList.remove("ativo");
+  cardAtivoEl = el;
+  el.classList.add("ativo");
+
+  // Preenche a busca visualmente
+  document.getElementById("searchInput").value = termo;
+
+  mostrarResultados(termo);
+}
+
+/* ── Digitação na barra de busca ── */
+function onSearchInput(query) {
+  // Desmarca card ativo ao digitar manualmente
+  if (cardAtivoEl) { cardAtivoEl.classList.remove("ativo"); cardAtivoEl = null; }
+
+  if (!query.trim()) { esconderResultados(); return; }
+  mostrarResultados(query);
+}
+
+function mostrarResultados(query) {
+  const q = query.toLowerCase();
+  const filtrados = todosItens.filter(item =>
+    item.nome.toLowerCase().includes(q) ||
+    (item.categoria || "").toLowerCase().includes(q) ||
+    (item.descricao || "").toLowerCase().includes(q)
+  );
+
+  const resultados = document.getElementById("resultados");
+  resultados.style.display = "block";
+  resultados.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const label = document.getElementById("resultados-label");
+  label.textContent = filtrados.length + " resultado" + (filtrados.length !== 1 ? "s" : "") + ' para "' + query + '"';
+
+  renderizarGrid(filtrados, query);
+}
+
+function esconderResultados() {
+  document.getElementById("resultados").style.display = "none";
+  document.getElementById("searchInput").value = "";
+}
+
+function limparFiltro() {
+  if (cardAtivoEl) { cardAtivoEl.classList.remove("ativo"); cardAtivoEl = null; }
+  esconderResultados();
+}
+
+function renderizarGrid(data, query) {
+  const grid_sec = document.getElementById("tab-todos");
+  const empty    = document.getElementById("emptyState");
+
+  grid_sec.innerHTML = "";
+
+  if (!data.length) {
+    empty.style.display = "block";
+    document.getElementById("emptyQuery").textContent = query;
+    return;
+  }
+  empty.style.display = "none";
+
+  const grid = document.createElement("div");
+  grid.className = "files-grid";
+
+  data.forEach(item => {
+    const isLink = item.arquivo_nome === "__link__";
+    const card = document.createElement("div");
+    card.className = "file-card";
+
+    if (isLink) {
+      card.innerHTML = `
+        <div class="file-type-icon">🔗</div>
+        <div class="file-info">
+          <div class="file-name">${item.nome}</div>
+          <div class="file-meta">${item.descricao || item.arquivo_url}</div>
+        </div>
+        <a href="${item.arquivo_url}" target="_blank" class="btn-download" title="Abrir link">↗</a>
+      `;
+    } else {
+      card.innerHTML = `
+        <div class="file-type-icon">📄</div>
+        <div class="file-info">
+          <div class="file-name">${item.nome}</div>
+          <div class="file-meta">${item.arquivo_nome}</div>
+        </div>
+        <a href="${item.arquivo_url}" download target="_blank" class="btn-download">⬇️</a>
+      `;
+    }
+    grid.appendChild(card);
+  });
+
+  grid_sec.appendChild(grid);
+}
+</script>
+
+</body>
+</html>
